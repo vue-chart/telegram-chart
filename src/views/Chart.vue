@@ -1,7 +1,7 @@
 <template>
   <div class="page_wrapper">
     <select v-model="chartNumber">
-      <option v-for="(item, index) in dataJson" :key="index" :value="index">График {{index + 1}}</option>
+       <option v-for="(item, index) in dataJson" :key="index" :value="index">График {{index + 1}}</option>
     </select>
     <chart-canvas :dataJson="dataJson"
                   :width="width"
@@ -10,7 +10,7 @@
       <div slot="slider" class="slider" ref="slider">
         <div class="size_wrap" ref="slider_resize">
           <!-- Сейчас доступно изменение ширины одним ползунком -->
-          <!-- <span class="left" @click="resize($event.target)"></span> -->
+          <span class="left" @mousedown="resize()"></span>
           <span class="right" @mousedown="resize()"></span>
         </div>
       </div>
@@ -71,16 +71,22 @@ export default {
 .page_wrapper
   width inherit
   height inherit
+  display flex
+  flex-direction column
+  align-items center
 .slider
-  width 50%
+  width 70%
   height 50px
   margin-top 20px
   background-size 100% 100%
   background-repeat no-repeat
+  display flex
+  justify-content center
   .size_wrap
     height 100%
-    position relative
+    width 100%
     background-color #c0c0bc36
+    position relative
     span
       display block
       position absolute

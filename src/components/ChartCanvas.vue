@@ -169,7 +169,8 @@ export default {
 
 <style scoped lang="stylus">
 .chart_wrapper
-  width inherit
+  width 100%
+  max-width 1000px
   height inherit
   display flex
   justify-content center
