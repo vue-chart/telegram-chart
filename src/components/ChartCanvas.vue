@@ -1,6 +1,8 @@
 <template>
   <div class="chart_wrapper">
     <canvas ref="canvas" width="700" height="400"></canvas>
+    <slot name="slider">
+    </slot>
   </div>
 </template>
 
@@ -14,31 +16,38 @@ export default {
     },
     width: {
       type: Number
+    },
+    chartNumber: {
+      type: Number
     }
   },
   data () {
     return {
       denomList: den,
-      canvas: ''
+      canvas: '',
+      data: this.dataJson[this.chartNumber]
     }
   },
   watch: {
     width (to, fr) {
       this.setWidth(to)
+      this.prepareData(this.canvas, this.data)
+    },
+    chartNumber (to, fr) {
+      this.data = this.dataJson[to]
+      this.prepareData(this.canvas, this.data)
     }
   },
   mounted () {
-    this.prepareData()
-    console.log(this.dataJson)
+    this.canvas = this.$refs.canvas
+    
+    this.prepareData(this.canvas, this.data)
   },
   methods: {
-    prepareData () {
-      this.canvas = this.$refs.canvas
-      let c = this.canvas.getContext('2d')
-      let data = this.dataJson[4]
+    // Готовим данные
+    prepareData (canvas, data) {
+      let c = canvas.getContext('2d')
       let lines = []
-      let dataX = data.columns[0]
-      this.setWidth(dataX.length * 10)
       Object.keys(data.names).forEach(k => {
         let color = data.colors[k]
         let name = data.names[k]
@@ -47,12 +56,11 @@ export default {
         let denom = 1
         data.columns.forEach(c => {
           if (c[0] === k) {
-            c.splice(0, 1)
-            values = c
-            denom = this.denomList[c[0].toString().length] || 1
+            values = c.slice(1, c.lenght)
+            denom = this.denomList[values[0].toString().length] || 1
           }
         })
-        let stepX = this.canvas.width / values.length
+        let stepX = canvas.width / values.length
         lines.push({
           color: color,
           name: name,
@@ -64,11 +72,12 @@ export default {
       })
       this.setHeight(this.getMaxHeight(lines))
       lines.forEach(l => {
-        this.drawLine(this.canvas, l.values, l.color, l.stepX, l.denom)
+        this.drawLine(canvas, l.values, l.color, l.stepX, l.denom)
       })
-      this.drawX(this.canvas, c)
-      this.drawY(this.canvas, c)
+      this.drawX(canvas, c)
+      this.drawY(canvas, c)
     },
+    // Рисуем линии по координатам
     drawLine (canvas, values, color, stepX, denom) {
       let c = canvas.getContext('2d')
       let x = 0
@@ -84,6 +93,7 @@ export default {
       })
       c.stroke()
     },
+    // Рисуем ось X
     drawX (canvas, c) {
       c.beginPath()
       c.lineWidth = 4
@@ -92,6 +102,7 @@ export default {
       c.strokeStyle = '#8ec04f'
       c.stroke()
     },
+    // Рисуем ось Y
     drawY (canvas, c) {
       c.beginPath()
       c.lineWidth = 4
@@ -100,6 +111,7 @@ export default {
       c.strokeStyle = '#8ec04f'
       c.stroke()
     },
+    // Устанавливаем ширину для canvas
     setWidth (w) {
       if (w > 1000) {
         w = 1000
@@ -111,6 +123,7 @@ export default {
         this.canvas.width = w
       }
     },
+    // Устанавливаем высоту для canvas
     setHeight (h) {
       if (h > 700) {
         h = 700
@@ -122,6 +135,7 @@ export default {
         this.canvas.height = h
       }
     },
+    // Получаем максимальную координату по оси Y
     getMaxHeight (lines) {
       let maxs = []
       lines.forEach(l => {
@@ -140,5 +154,6 @@ export default {
   height inherit
   display flex
   justify-content center
+  flex-direction column
   align-items center
 </style>
