@@ -37,7 +37,7 @@ export default {
       let data = this.dataJson[1]
       let lines = []
       let dataX = data.columns[0]
-      let wt =  dataX.length * 10
+      let wt = dataX.length * 10
       canvas.width = wt > 1000 ? 1000 : wt
       Object.keys(data.names).forEach(k => {
         let color = data.colors[k]
