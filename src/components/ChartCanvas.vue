@@ -26,14 +26,15 @@ export default {
     setCanvasHeight (lines) {
       let maxs = []
       lines.forEach(l => {
-        maxs.push(Math.max.apply(null, l.values))
+        let m = Math.max.apply(null, l.values)
+        maxs.push(m / l.denom + 20)
       })
       return Math.max.apply(null, maxs)
     },
     prepareData () {
       let canvas = this.$refs.canvas
       let c = canvas.getContext('2d')
-      let data = this.dataJson[3]
+      let data = this.dataJson[1]
       let lines = []
       let dataX = data.columns[0]
       let wt =  dataX.length * 10
@@ -61,7 +62,7 @@ export default {
           stepX: stepX
         })
       })
-      // canvas.height = this.setCanvasHeight(lines)
+      canvas.height = this.setCanvasHeight(lines)
       lines.forEach(l => {
         this.drawLine(canvas, l.values, l.color, l.stepX, l.denom)
       })
