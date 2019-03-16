@@ -11,11 +11,20 @@ export default {
   props: {
     dataJson: {
       type: Array
+    },
+    width: {
+      type: Number
     }
   },
   data () {
     return {
-      denomList: den
+      denomList: den,
+      canvas: ''
+    }
+  },
+  watch: {
+    width (to, fr) {
+      this.setWidth(to)
     }
   },
   mounted () {
@@ -23,22 +32,13 @@ export default {
     console.log(this.dataJson)
   },
   methods: {
-    setCanvasHeight (lines) {
-      let maxs = []
-      lines.forEach(l => {
-        let m = Math.max.apply(null, l.values)
-        maxs.push(m / l.denom + 20)
-      })
-      return Math.max.apply(null, maxs)
-    },
     prepareData () {
-      let canvas = this.$refs.canvas
-      let c = canvas.getContext('2d')
-      let data = this.dataJson[1]
+      this.canvas = this.$refs.canvas
+      let c = this.canvas.getContext('2d')
+      let data = this.dataJson[4]
       let lines = []
       let dataX = data.columns[0]
-      let wt = dataX.length * 10
-      canvas.width = wt > 1000 ? 1000 : wt
+      this.setWidth(dataX.length * 10)
       Object.keys(data.names).forEach(k => {
         let color = data.colors[k]
         let name = data.names[k]
@@ -52,7 +52,7 @@ export default {
             denom = this.denomList[c[0].toString().length] || 1
           }
         })
-        let stepX = canvas.width / values.length
+        let stepX = this.canvas.width / values.length
         lines.push({
           color: color,
           name: name,
@@ -62,12 +62,12 @@ export default {
           stepX: stepX
         })
       })
-      canvas.height = this.setCanvasHeight(lines)
+      this.setHeight(this.getMaxHeight(lines))
       lines.forEach(l => {
-        this.drawLine(canvas, l.values, l.color, l.stepX, l.denom)
+        this.drawLine(this.canvas, l.values, l.color, l.stepX, l.denom)
       })
-      this.drawX(canvas, c)
-      this.drawY(canvas, c)
+      this.drawX(this.canvas, c)
+      this.drawY(this.canvas, c)
     },
     drawLine (canvas, values, color, stepX, denom) {
       let c = canvas.getContext('2d')
@@ -99,6 +99,36 @@ export default {
       c.lineTo(0, canvas.height)
       c.strokeStyle = '#8ec04f'
       c.stroke()
+    },
+    setWidth (w) {
+      if (w > 1000) {
+        w = 1000
+      }
+      if (w < 300) {
+        w = 300
+      }
+      if (this.canvas) {
+        this.canvas.width = w
+      }
+    },
+    setHeight (h) {
+      if (h > 700) {
+        h = 700
+      }
+      if (h < 300) {
+        h = 300
+      }
+      if (this.canvas) {
+        this.canvas.height = h
+      }
+    },
+    getMaxHeight (lines) {
+      let maxs = []
+      lines.forEach(l => {
+        let m = Math.max.apply(null, l.values)
+        maxs.push(m / l.denom + 20)
+      })
+      return Math.max.apply(null, maxs)
     }
   }
 }
