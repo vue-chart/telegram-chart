@@ -3,9 +3,12 @@
     <select v-model="chartNumber">
       <option v-for="(item, index) in dataJson" :key="index" :value="index">График {{index + 1}}</option>
     </select>
-    <chart-canvas :dataJson="dataJson" :width="width" :chartNumber="chartNumber">
-      <div slot="slider" class="slider">
-        <div class="size_wrap" ref="slider">
+    <chart-canvas :dataJson="dataJson"
+                  :width="width"
+                  :chartNumber="chartNumber"
+                  @backgroundUrl="setImageUrl">
+      <div slot="slider" class="slider" ref="slider">
+        <div class="size_wrap" ref="slider_resize">
           <!-- Сейчас доступно изменение ширины одним ползунком -->
           <!-- <span class="left" @click="resize($event.target)"></span> -->
           <span class="right" @mousedown="resize()"></span>
@@ -32,6 +35,10 @@ export default {
     }
   },
   methods: {
+    setImageUrl (dataUrl) {
+      let el = this.$refs.slider
+      el.style.backgroundImage = 'url(' + dataUrl + ')'
+    },
     // Изменение ширины
     resize () {
       document.addEventListener('mousemove', this.moveSlider)
@@ -52,7 +59,7 @@ export default {
     }
   },
   mounted () {
-    this.targetResize = this.$refs.slider
+    this.targetResize = this.$refs.slider_resize
   },
   components: {
     ChartCanvas
@@ -68,7 +75,8 @@ export default {
   width 50%
   height 50px
   margin-top 20px
-  background-color #f5f8f9
+  background-size 100% 100%
+  background-repeat no-repeat
   .size_wrap
     height 100%
     position relative
