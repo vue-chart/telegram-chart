@@ -1,8 +1,11 @@
 <template>
   <div class="chart_wrapper">
     <canvas ref="canvas" width="700" height="400"></canvas>
-    <slot name="slider">
-    </slot>
+    <div>
+      <label v-for="line in lines" :key="line.name.name">
+      <input type="checkbox" v-model="line.name.show" @change="toggleLines(line)"/> {{line.name.name}}</label>
+    </div>
+    <slot name="slider"></slot>
   </div>
 </template>
 
@@ -25,6 +28,7 @@ export default {
     return {
       denomList: den,
       canvas: '',
+      lines: [],
       data: this.dataJson[this.chartNumber]
     }
   },
@@ -40,14 +44,24 @@ export default {
   },
   mounted () {
     this.canvas = this.$refs.canvas
-    
     this.prepareData(this.canvas, this.data)
   },
   methods: {
+    toggleLines (line) {
+      this.setHeight(this.getMaxHeight(this.lines))
+      this.lines.forEach(l => {
+        if (!l.name.show) return
+        this.drawLine(this.canvas, l.values, l.color, l.stepX, l.denom)
+      })
+      let c = this.canvas.getContext('2d')
+      this.drawX(this.canvas, c)
+      this.drawY(this.canvas, c)
+      this.$emit('backgroundUrl', this.canvas.toDataURL())
+    },
     // Готовим данные
     prepareData (canvas, data) {
       let c = canvas.getContext('2d')
-      let lines = []
+      this.lines = []
       Object.keys(data.names).forEach(k => {
         let color = data.colors[k]
         let name = data.names[k]
@@ -61,21 +75,25 @@ export default {
           }
         })
         let stepX = canvas.width / values.length
-        lines.push({
+        this.lines.push({
           color: color,
-          name: name,
+          name: {
+            name: name,
+            show: true
+          },
           type: type,
           values: values,
           denom: denom,
           stepX: stepX
         })
       })
-      this.setHeight(this.getMaxHeight(lines))
-      lines.forEach(l => {
+      this.setHeight(this.getMaxHeight(this.lines))
+      this.lines.forEach(l => {
         this.drawLine(canvas, l.values, l.color, l.stepX, l.denom)
       })
       this.drawX(canvas, c)
       this.drawY(canvas, c)
+      this.$emit('backgroundUrl', canvas.toDataURL())
     },
     // Рисуем линии по координатам
     drawLine (canvas, values, color, stepX, denom) {
@@ -139,6 +157,7 @@ export default {
     getMaxHeight (lines) {
       let maxs = []
       lines.forEach(l => {
+        if (!l.name.show) return
         let m = Math.max.apply(null, l.values)
         maxs.push(m / l.denom + 20)
       })
@@ -150,7 +169,8 @@ export default {
 
 <style scoped lang="stylus">
 .chart_wrapper
-  width inherit
+  width 100%
+  max-width 1000px
   height inherit
   display flex
   justify-content center
